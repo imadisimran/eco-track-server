@@ -29,8 +29,8 @@ async function run() {
     await client.connect();
     const eco_track=client.db('eco_track')
     const challenges=eco_track.collection('challenges')
-    app.get('/challenges',async(req,res)=>{
-      const cursor=challenges.find()
+    app.get('/recent-challenges',async(req,res)=>{
+      const cursor=challenges.find().sort({endDate:-1}).limit(5)
       const result = await cursor.toArray()
       res.send(result)
     })
