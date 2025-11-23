@@ -30,6 +30,8 @@ async function run() {
     await client.connect();
     const eco_track=client.db('eco_track')
     const challenges=eco_track.collection('challenges')
+
+    //Get Api
     app.get('/recent-challenges',async(req,res)=>{
       const cursor=challenges.find().sort({endDate:-1}).limit(5)
       const result = await cursor.toArray()
@@ -46,12 +48,36 @@ async function run() {
       const id=req.params.id
       const query={_id:new ObjectId(id)}
       const result = await challenges.findOne(query)
+      if(!result){
+        return res.send({message:'Not Found'})
+      }
       res.send(result)
     })
 
+    //Post Api
     app.post('/challenges',async(req,res)=>{
       const newChallenge = req.body
       const result = await challenges.insertOne(newChallenge)
+      res.send(result)
+    })
+
+    //Delete Api
+    app.delete('/challenges/:id',async(req,res)=>{
+      const id = req.params.id
+      const query={_id:new ObjectId(id)}
+      const result=await challenges.deleteOne(query)
+      res.send(result)
+    })
+
+    //Update Api
+    app.patch('/challenges/:id',async(req,res)=>{
+      const id=req.params.id
+      const updatedChallenge=req.body
+      const update={
+        $set: updatedChallenge
+      }
+      const query={_id:new ObjectId(id)}
+      const result = await challenges.updateOne(query,update)
       res.send(result)
     })
 
