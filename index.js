@@ -30,6 +30,8 @@ async function run() {
     await client.connect();
     const eco_track=client.db('eco_track')
     const challenges=eco_track.collection('challenges')
+    const tips=eco_track.collection('tips')
+    const events=eco_track.collection('events')
 
     //Get Api
     app.get('/recent-challenges',async(req,res)=>{
@@ -51,6 +53,18 @@ async function run() {
       if(!result){
         return res.send({message:'Not Found'})
       }
+      res.send(result)
+    })
+
+    app.get('/recent-tips',async(req,res)=>{
+      const cursor=tips.find().sort({createdAt:-1}).limit(5)
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.get('/events',async(req,res)=>{
+      const cursor = events.find()
+      const result=await cursor.toArray()
       res.send(result)
     })
 
