@@ -43,15 +43,56 @@ async function run() {
     })
 
     app.get('/challenges', async (req, res) => {
-      if(req.query.categories){
+      const query = {}
+
+      const startDate = req.query.startDate
+      const endDate = req.query.endDate
+
+      // if(req.query.startDate && req.query.endDate){
+      //   const startDate=req.query.startDate
+      //   const endDate=req.query.endDate
+      //   query.startDate={$gte:startDate}
+      //   query.endDate={$lte:endDate}
+      // }
+
+      // if (req.query.startDate) {
+      //   query.endDate = { $gte: req.query.startDate } 
+      // }
+
+      // if (req.query.endDate) {
+      //   query.startDate = { $lte: req.query.endDate }
+      // }
+
+      // SCENARIO 1: User provided BOTH dates (Strict Range)
+      if (startDate && endDate) {
+        // "Find challenges that start AND end within my chosen dates"
+        query.startDate = { $gte: startDate };
+        query.endDate = { $lte: endDate };
+      }
+
+      // SCENARIO 2: User provided ONLY ONE date (Flexible/Open-ended)
+      else {
+        if (startDate) {
+          // "Show me challenges that are still active (haven't ended yet)"
+          query.endDate = { $gte: startDate };
+        }
+        if (endDate) {
+          // "Show me challenges that started before this date"
+          query.startDate = { $lte: endDate };
+        }
+      }
+
+      if (req.query.categories) {
         const categories = req.query.categories.split(',')
         // console.log(categories)
-        const query={category:{$in:categories}}
-        const cursor=challenges.find(query)
-        const result = await cursor.toArray()
-        return res.send(result)
+        // const query={category:{$in:categories}}
+        query.category = { $in: categories }
+        // const cursor=challenges.find(query)
+        // const result = await cursor.toArray()
+        // return res.send(result)
       }
-      const cursor = challenges.find().sort({ startDate: -1 })
+      // console.log(req.query.startDate, req.query.endDate, req.query.categories)
+      const cursor = challenges.find(query)
       const result = await cursor.toArray()
       res.send(result)
     })
