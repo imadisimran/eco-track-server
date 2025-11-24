@@ -184,7 +184,7 @@ async function run() {
         $set: updatedChallenge
       }
       const query = { _id: new ObjectId(id) }
-      const result = await challenges.updateOne(query, update)
+      const result = await challenges.updateOne(query, update,{upsert:true})
       res.send(result)
     })
 
