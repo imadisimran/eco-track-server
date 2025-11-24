@@ -33,6 +33,7 @@ async function run() {
     const tips = eco_track.collection('tips')
     const events = eco_track.collection('events')
     const usersChallenge = eco_track.collection('usersChallenge')
+    const impacts = eco_track.collection('impacts')
 
     //Get Api
     app.get('/recent-challenges', async (req, res) => {
@@ -42,6 +43,14 @@ async function run() {
     })
 
     app.get('/challenges', async (req, res) => {
+      if(req.query.categories){
+        const categories = req.query.categories.split(',')
+        // console.log(categories)
+        const query={category:{$in:categories}}
+        const cursor=challenges.find(query)
+        const result = await cursor.toArray()
+        return res.send(result)
+      }
       const cursor = challenges.find().sort({ startDate: -1 })
       const result = await cursor.toArray()
       res.send(result)
@@ -67,6 +76,36 @@ async function run() {
       const cursor = events.find()
       const result = await cursor.toArray()
       res.send(result)
+    })
+
+    app.get('/impacts', async (req, res) => {
+      const cursor = impacts.find()
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+    app.get('/user-challenges', async (req, res) => {
+      const query = req.query
+      const cursor1 = usersChallenge.find(query)
+      const result1 = await cursor1.toArray()
+      const challengeIds = result1.map(r => new ObjectId(r.challengeId))
+      // console.log(challengeIds)
+      // const result2=await challenges.find()
+      const filter = { _id: { $in: challengeIds } }
+      const cursor2 = challenges.find(filter).project({ _id: 0, title: 1, imageUrl: 1 })
+      const result2 = await cursor2.toArray()
+      res.send({ userChallenge: result1, challenges: result2 })
+    })
+
+    app.get('/getCategories', async (req, res) => {
+      const categories = await challenges.aggregate([
+        {
+          $group: { _id: "$category" }
+        }
+      ]).toArray();
+
+      res.send(categories)
+
     })
 
     //Post Api
