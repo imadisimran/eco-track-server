@@ -213,3 +213,6 @@ run().catch(console.dir);
 app.listen(port, () => {
   console.log(`server is running at ${port}`)
 })
+
+// For vercel
+module.exports = app;
